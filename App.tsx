@@ -1,118 +1,95 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, FlatList, StyleSheet, Text, ActivityIndicator, View } from 'react-native';
+import ProductCard from './src/components/ProductCard';
+import CategoryTabs from './src/components/CategoryTabs';
+import { getCategories, getProducts, getProductsByCategory } from './src/services/api';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+const App: React.FC = () => {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [selectedCategory, setSelectedCategory] = useState<string>('All');
+    const [categories, setCategories] = useState<string[]>(['All']);
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+    useEffect(() => {
+        fetchCategories(); // Fetch categories on mount
+        fetchProducts(); // Fetch all products initially
+    }, []);
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+    const fetchCategories = async () => {
+        try {
+            const data = await getCategories();
+            setCategories(['All', ...data]); // Add 'All' as the default category
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    };
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+    const fetchProducts = async (category = 'All') => {
+        setLoading(true);
+        try {
+            let data;
+            if (category === 'All') {
+                data = await getProducts();
+            }
+            else {
+                data = await getProductsByCategory(category);
+            }
+            setProducts(data);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+    const handleCategoryChange = (category: string) => {
+        setSelectedCategory(category);
+        fetchProducts(category);
+    };
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+    const renderProduct = ({ item }: { item: Product; }) => (
+        <ProductCard product={item} onPress={() => handleProductPress(item)} />
+    );
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
+    const handleProductPress = (product: Product) => {
+        // Handle navigation to product details page here
+        console.log('Product pressed:', product);
+    };
+
+    return (
+        <SafeAreaView style={styles.container}>
+            {loading ? (
+                <View style={styles.loading}>
+                    <ActivityIndicator size="large" color="#007BFF" />
+                </View>
+            ) : (
+                <>
+                    <CategoryTabs
+                        categories={categories}
+                        selectedCategory={selectedCategory}
+                        onSelectCategory={handleCategoryChange}
+                    />
+                    <FlatList
+                        data={products}
+                        renderItem={renderProduct}
+                        keyExtractor={(item) => item.id.toString()}
+                    />
+                </>
+            )}
+        </SafeAreaView>
+    );
+};
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#f8f8f8',
+    },
+    loading: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 export default App;
