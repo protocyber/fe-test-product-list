@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, View } from 'react-native';
 import CategoryTabs from '../components/CategoryTabs';
 import ProductCard from '../components/ProductCard';
 import { getCategories, getProducts, getProductsByCategory } from '../services/api';
 import { useNavigation } from '@react-navigation/native';
 
-
 const ProductList = () => {
     const navigation = useNavigation();
     const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loadingCategories, setLoadingCategories] = useState<boolean>(true);
+    const [loadingProducts, setLoadingProducts] = useState<boolean>(true);
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
     const [categories, setCategories] = useState<string[]>(['All']);
     const [skip, setSkip] = useState<number>(0);
-    const [limit] = useState<number>(30); // Keeping it static as per the API limit
+    const [limit] = useState<number>(30);
     const [total, setTotal] = useState<number>(0);
 
     useEffect(() => {
         fetchCategories(); // Fetch categories on mount
-        fetchProducts(); // Fetch all products initially
+        fetchProducts();   // Fetch all products initially
     }, []);
 
     const fetchCategories = async () => {
@@ -28,12 +28,14 @@ const ProductList = () => {
             setCategories(['All', ...data]); // Add 'All' as the default category
         } catch (error) {
             console.error('Error fetching categories:', error);
+        } finally {
+            setLoadingCategories(false);
         }
     };
 
     const fetchProducts = async (category = 'All', skipParam = 0, isLoadMore = false) => {
         if (!isLoadMore) {
-            setLoading(true);
+            setLoadingProducts(true);
         } else {
             setLoadingMore(true);
         }
@@ -42,12 +44,10 @@ const ProductList = () => {
             let data;
             if (category === 'All') {
                 data = await getProducts({ limit, skip: skipParam });
-            }
-            else {
+            } else {
                 data = await getProductsByCategory(category, { limit, skip: skipParam });
             }
 
-            // If we're loading more, append to the list; otherwise replace it
             setProducts((prevProducts) =>
                 isLoadMore ? [...prevProducts, ...data.products] : data.products
             );
@@ -56,16 +56,18 @@ const ProductList = () => {
         } catch (error) {
             console.error('Error fetching products:', error);
         } finally {
-            setLoading(false);
+            setLoadingProducts(false);
             setLoadingMore(false);
         }
     };
 
-    const handleCategoryChange = (category: string) => {
-        setSelectedCategory(category);
-        setSkip(0); // Reset skip when category changes
-        fetchProducts(category);
-    };
+    const handleCategoryChange = useCallback((category: string) => {
+        if (category !== selectedCategory) { // Prevent unnecessary fetch
+            setSelectedCategory(category);
+            setSkip(0); // Reset skip when category changes
+            fetchProducts(category); // Fetch products for the selected category
+        }
+    }, [selectedCategory]); // Include selectedCategory to avoid stale closure
 
     const renderProduct = ({ item }: { item: Product; }) => (
         <ProductCard product={item} onPress={() => handleProductPress(item)} />
@@ -84,32 +86,30 @@ const ProductList = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            {loading ? (
+            {!loadingCategories && (
+                <CategoryTabs
+                    categories={categories}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={handleCategoryChange} // Use the updated handler
+                />
+            )}
+            {loadingProducts || loadingCategories ? (
                 <View style={styles.loading}>
                     <ActivityIndicator size="large" />
                 </View>
             ) : (
-                <>
-                    <CategoryTabs
-                        categories={categories}
-                        selectedCategory={selectedCategory}
-                        onSelectCategory={handleCategoryChange}
-                    />
-                    <FlatList
-                        data={products}
-                        renderItem={renderProduct}
-                        keyExtractor={(item) => item.id.toString()}
-                        onEndReached={handleLoadMore}  // Trigger fetching more items when list end is reached
-                        onEndReachedThreshold={0.5}    // Trigger when the user scrolls 50% near the bottom
-                        ListFooterComponent={
-                            loadingMore && (
-                                <View style={styles.loadingMore}>
-                                    <ActivityIndicator size="small" />
-                                </View>
-                            )
-                        }
-                    />
-                </>
+                <FlatList
+                    data={products}
+                    renderItem={renderProduct}
+                    keyExtractor={(item) => item.id.toString()}
+                    onEndReached={handleLoadMore}  // Trigger fetching more items when list end is reached
+                    onEndReachedThreshold={0.5}    // Trigger when the user scrolls 50% near the bottom
+                    ListFooterComponent={loadingMore && (
+                        <View style={styles.loadingMore}>
+                            <ActivityIndicator size="small" />
+                        </View>
+                    )}
+                />
             )}
         </SafeAreaView>
     );
@@ -124,13 +124,11 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        color: '#42b549',
     },
     loadingMore: {
         paddingVertical: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        color: '#42b549',
     },
 });
 
