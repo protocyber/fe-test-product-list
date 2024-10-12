@@ -11,7 +11,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
         <TouchableOpacity style={styles.card} onPress={onPress}>
             <Image style={styles.image} source={{ uri: product.thumbnail }} />
             <View style={styles.info}>
-                <Text style={styles.title}>{product.id}</Text>
+                {/* <Text style={styles.title}>{product.id}</Text> */}
                 <Text style={styles.title}>{product.title}</Text>
                 <Text style={styles.description}>{product.description}</Text>
                 <Text style={styles.price}>${product.price}</Text>
@@ -22,6 +22,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
 
 const styles = StyleSheet.create({
     card: {
+        color: '#000',
         flexDirection: 'row',
         padding: 10,
         marginHorizontal: 10,
