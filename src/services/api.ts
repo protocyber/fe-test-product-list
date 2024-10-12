@@ -2,9 +2,16 @@ import axios from 'axios';
 
 const BASE_URL = 'https://dummyjson.com/products';
 
-export const getProducts = async () => {
-  const response = await axios.get(`${BASE_URL}`);
-  return response.data.products;
+export const DEFAULT_LIMIT = 30;
+
+export type ProductRequestParams = {
+  limit: number;
+  skip: number;
+};
+
+export const getProducts = async ({limit = DEFAULT_LIMIT, skip}: ProductRequestParams) => {
+  const response = await axios.get(`${BASE_URL}?limit=${limit}&skip=${skip}`);
+  return response.data;
 };
 
 export const getProductById = async (id: number) => {
@@ -17,7 +24,9 @@ export const getCategories = async () => {
   return response.data;
 };
 
-export const getProductsByCategory = async (category: string) => {
-  const response = await axios.get(`${BASE_URL}/category/${category}`);
-  return response.data.products;
+export const getProductsByCategory = async (category: string, {limit = DEFAULT_LIMIT, skip}: ProductRequestParams) => {
+  const response = await axios.get(
+    `${BASE_URL}/category/${category}?limit=${limit}&skip=${skip}`,
+  );
+  return response.data;
 };

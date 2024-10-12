@@ -1,14 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, FlatList, StyleSheet, Text, ActivityIndicator, View } from 'react-native';
-import ProductCard from './src/components/ProductCard';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, View } from 'react-native';
 import CategoryTabs from './src/components/CategoryTabs';
+import ProductCard from './src/components/ProductCard';
 import { getCategories, getProducts, getProductsByCategory } from './src/services/api';
 
 const App: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [loadingMore, setLoadingMore] = useState<boolean>(false);
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
     const [categories, setCategories] = useState<string[]>(['All']);
+    const [skip, setSkip] = useState<number>(0);
+    const [limit] = useState<number>(30); // Keeping it static as per the API limit
+    const [total, setTotal] = useState<number>(0);
 
     useEffect(() => {
         fetchCategories(); // Fetch categories on mount
@@ -24,26 +28,39 @@ const App: React.FC = () => {
         }
     };
 
-    const fetchProducts = async (category = 'All') => {
-        setLoading(true);
+    const fetchProducts = async (category = 'All', skipParam = 0, isLoadMore = false) => {
+        if (!isLoadMore) {
+            setLoading(true);
+        } else {
+            setLoadingMore(true);
+        }
+
         try {
             let data;
             if (category === 'All') {
-                data = await getProducts();
+                data = await getProducts({limit, skip: skipParam});
             }
             else {
-                data = await getProductsByCategory(category);
+                data = await getProductsByCategory(category, { limit, skip: skipParam });
             }
-            setProducts(data);
+
+            // If we're loading more, append to the list; otherwise replace it
+            setProducts((prevProducts) =>
+                isLoadMore ? [...prevProducts, ...data.products] : data.products
+            );
+            setTotal(data.total);
+            setSkip(skipParam + limit); // Increase the skip value for the next request
         } catch (error) {
             console.error('Error fetching products:', error);
         } finally {
             setLoading(false);
+            setLoadingMore(false);
         }
     };
 
     const handleCategoryChange = (category: string) => {
         setSelectedCategory(category);
+        setSkip(0); // Reset skip when category changes
         fetchProducts(category);
     };
 
@@ -56,11 +73,17 @@ const App: React.FC = () => {
         console.log('Product pressed:', product);
     };
 
+    const handleLoadMore = () => {
+        if (products.length < total && !loadingMore) {
+            fetchProducts(selectedCategory, skip, true); // Fetch more products
+        }
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             {loading ? (
                 <View style={styles.loading}>
-                    <ActivityIndicator size="large" color="#007BFF" />
+                    <ActivityIndicator size="large" />
                 </View>
             ) : (
                 <>
@@ -73,6 +96,15 @@ const App: React.FC = () => {
                         data={products}
                         renderItem={renderProduct}
                         keyExtractor={(item) => item.id.toString()}
+                        onEndReached={handleLoadMore}  // Trigger fetching more items when list end is reached
+                        onEndReachedThreshold={0.5}    // Trigger when the user scrolls 50% near the bottom
+                        ListFooterComponent={
+                            loadingMore && (
+                                <View style={styles.loadingMore}>
+                                    <ActivityIndicator size="small" />
+                                </View>
+                            )
+                        }
                     />
                 </>
             )}
@@ -89,6 +121,13 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        color: '#42b549',
+    },
+    loadingMore: {
+        paddingVertical: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        color: '#42b549',
     },
 });
 

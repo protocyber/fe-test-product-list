@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface ProductCardProps {
     product: Product;
@@ -24,7 +24,8 @@ const styles = StyleSheet.create({
     card: {
         flexDirection: 'row',
         padding: 10,
-        margin: 10,
+        marginHorizontal: 10,
+        marginVertical: 7,
         backgroundColor: '#fff',
         borderRadius: 8,
         elevation: 2,

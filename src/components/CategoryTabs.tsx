@@ -45,14 +45,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedTab: {
-        borderBottomColor: '#007BFF',
+        borderBottomColor: '#4f9d4d',
     },
     tabText: {
         fontSize: 16,
         color: '#333',
     },
     selectedText: {
-        color: '#007BFF',
+        color: '#4f9d4d',
         fontWeight: 'bold',
     },
 });
