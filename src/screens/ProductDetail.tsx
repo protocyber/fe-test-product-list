@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 16,
         borderRadius: 8,
-        overflow: 'hidden', // Add this line to prevent overflow issues
+        overflow: 'hidden', // To prevent overflow issues
     },
     slideshowImage: {
         width: '100%',

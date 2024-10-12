@@ -1,5 +1,7 @@
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import FastImage from 'react-native-fast-image';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Icon from 'react-native-vector-icons/AntDesign';
 
 interface ProductCardProps {
@@ -10,6 +12,9 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
     // Format the price with thousand separators
     const formattedPrice = new Intl.NumberFormat().format(product.price);
+
+    const [loadingImage, setLoadingImage] = useState<boolean>(true);
+
 
     return (
         <TouchableOpacity style={styles.card} onPress={onPress}>
@@ -24,7 +29,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
             // )
             }
             <View style={styles.imageContainer}>
-                <Image style={styles.image} source={{ uri: product.thumbnail }} />
+                {loadingImage && (
+                    <SkeletonPlaceholder>
+                        <SkeletonPlaceholder.Item
+                            width={100}
+                            height={100}
+                        />
+                    </SkeletonPlaceholder>
+                )}
+                <FastImage
+                    style={styles.image}
+                    source={{
+                        uri: product.thumbnail,
+                        priority: FastImage.priority.high,
+                    }}
+                    onLoadEnd={() => setLoadingImage(false)}
+                />
             </View>
             <View style={styles.info}>
                 <Text style={styles.title}>{product.title}</Text>
@@ -54,6 +74,9 @@ const styles = StyleSheet.create({
     },
     imageContainer: {
         position: 'relative', // For absolute positioning of discount triangle and text
+        overflow: 'hidden', // To prevent overflow issues
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     image: {
         width: 100,
