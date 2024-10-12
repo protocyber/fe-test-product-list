@@ -3,9 +3,11 @@ import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, View } from 'rea
 import CategoryTabs from '../components/CategoryTabs';
 import ProductCard from '../components/ProductCard';
 import { getCategories, getProducts, getProductsByCategory } from '../services/api';
+import { useNavigation } from '@react-navigation/native';
 
 
 const ProductList = () => {
+    const navigation = useNavigation();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [loadingMore, setLoadingMore] = useState<boolean>(false);
@@ -71,7 +73,7 @@ const ProductList = () => {
 
     const handleProductPress = (product: Product) => {
         // Handle navigation to product details page here
-        console.log('Product pressed:', product);
+        navigation.navigate('ProductDetail', { product });
     };
 
     const handleLoadMore = () => {
