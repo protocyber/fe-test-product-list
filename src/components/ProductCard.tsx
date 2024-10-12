@@ -36,7 +36,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
                 />
             </View>
             {/* Red Discount Rectangle */}
-            {product.discountPercentage > 10 && (
+            {product.discountPercentage >= 10 && (
                 <View style={styles.discountContainer}>
                     <Text style={styles.discountText}>
                         {`${Math.round(product.discountPercentage)}% OFF`}

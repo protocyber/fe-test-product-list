@@ -1,6 +1,6 @@
 import { RouteProp } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Icon from 'react-native-vector-icons/AntDesign';
@@ -19,6 +19,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
     const { product } = route.params;
     const [loadingImages, setLoadingImages] = useState<boolean[]>(new Array(product.images.length).fill(true));
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [firstImageLoading, setFirstImageLoading] = useState(true);
 
     const handleImageLoad = (index: number) => {
         setLoadingImages(prev => {
@@ -26,6 +27,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
             newLoadingImages[index] = false;
             return newLoadingImages;
         });
+        if (index === 0) {
+            setFirstImageLoading(false);
+        }
     };
 
     const handleNextImage = () => {
@@ -44,7 +48,24 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
         <ScrollView contentContainerStyle={styles.container}>
             {/* Image slideshow with left and right arrows */}
             <View style={styles.imageContainer}>
-                {loadingImages[currentIndex] && (
+                {/* If it's the first image and it's loading, show the thumbnail */}
+                {currentIndex === 0 && firstImageLoading && (
+                    <>
+                        <FastImage
+                            style={[styles.slideshowImage, styles.thumbnail]}
+                            source={{
+                                uri: product.thumbnail,
+                                priority: FastImage.priority.low,
+                            }}
+                            resizeMode={FastImage.resizeMode.cover}
+                            blurRadius={5} // Blurred thumbnail
+                        />
+                        <View style={styles.loadingOverlay}>
+                            <ActivityIndicator size="large" color="#555" />
+                        </View>
+                    </>
+                )}
+                {currentIndex > 0 && loadingImages[currentIndex] && (
                     <SkeletonPlaceholder borderRadius={8}>
                         <SkeletonPlaceholder.Item
                             width={width - 32}
@@ -60,6 +81,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
                         priority: FastImage.priority.high,
                     }}
                     onLoadEnd={() => handleImageLoad(currentIndex)}
+                    resizeMode={FastImage.resizeMode.cover}
                 />
 
                 {currentIndex > 0 && (
@@ -85,26 +107,24 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
                     </TouchableOpacity>
                 )}
             </View>
+
             {/* Product Details */}
             <View style={styles.detailsContainer}>
-
                 <View style={styles.priceContainer}>
                     <Text style={styles.price}>${product.price}</Text>
-                    {product.discountPercentage > 1 && (
+                    {product.discountPercentage >= 10 && (
                         <>
                             <Text style={styles.normalPrice}>${(product.price * 100 / (100 - product.discountPercentage)).toFixed(2)}</Text>
                             <Text style={styles.discount}>{Math.round(product.discountPercentage)}%</Text>
                         </>
-                    )
-                    }
+                    )}
                 </View>
                 <Text style={styles.title}>{product.title}</Text>
-                {/* <Text style={styles.tags}>{"\n"}Tags: {product.tags.join(', ')}</Text> */}
                 <Text style={styles.category}>{product.category}</Text>
 
                 <View style={styles.stockContainer}>
                     <Text style={styles.stock}>Stock: {product.stock}</Text>
-                    <Text style={styles.rating}><Icon name='star' style={styles.ratingIcon} /> {product.rating}</Text>
+                    <Text style={styles.rating}><Icon name="star" style={styles.ratingIcon} /> {product.rating}</Text>
                 </View>
 
                 <Text style={styles.description}>{product.description}</Text>
@@ -169,7 +189,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 16,
         borderRadius: 8,
-        overflow: 'hidden', // To prevent overflow issues
+        overflow: 'hidden', // Prevent overflow issues
     },
     slideshowImage: {
         width: '100%',
@@ -178,6 +198,19 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         left: 0,
+    },
+    thumbnail: {
+        opacity: 0.6,
+    },
+    loadingOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.5)', // Semi-transparent overlay to contrast the ActivityIndicator
     },
     arrowLeft: {
         position: 'absolute',
@@ -204,18 +237,14 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     iconContainer: {
-        backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent background for better visibility
-        padding: 5, // Padding around the icon
-        borderRadius: 20, // Round background
-        shadowColor: '#000', // Shadow color
-        shadowOffset: { width: 0, height: 4 }, // Shadow direction and size
-        shadowOpacity: 0.3, // Shadow transparency
-        shadowRadius: 4, // Shadow blur radius
-        elevation: 5, // Elevation for Android
-    },
-    arrowText: {
-        fontSize: 24,
-        color: '#333',
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        padding: 5,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
     },
     detailsContainer: {
         backgroundColor: '#f9f9f9',
