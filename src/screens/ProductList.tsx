@@ -1,11 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, View, TextInput, Text } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Icon from 'react-native-vector-icons/AntDesign';
 import CategoryTabs from '../components/CategoryTabs';
 import ProductCard from '../components/ProductCard';
-import { getCategories, getProducts, getProductsByCategory, searchProducts } from '../services/api'; // Ensure you have searchProducts function
-import { useNavigation } from '@react-navigation/native';
+import { getCategories, getProducts, getProductsByCategory, searchProducts } from '../services/api';
 
 const ProductList = () => {
+    const route = useRoute();
     const navigation = useNavigation();
     const [products, setProducts] = useState<Product[]>([]);
     const [loadingCategories, setLoadingCategories] = useState<boolean>(true);
@@ -16,17 +18,40 @@ const ProductList = () => {
     const [skip, setSkip] = useState<number>(0);
     const [limit] = useState<number>(30);
     const [total, setTotal] = useState<number>(0);
-    const [searchQuery, setSearchQuery] = useState<string>(''); // State for search query
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [latestSearchQuery, setLatestSearchQuery] = useState<string>('');
+    const [showSearch, setShowSearch] = useState<boolean>(false);
+
+    // Ref for the TextInput
+    const searchInputRef = useRef<TextInput>(null);
 
     useEffect(() => {
-        fetchCategories(); // Fetch categories on mount
-        fetchProducts();   // Fetch all products initially
+        if (route.params?.showSearch !== undefined) {
+            setShowSearch(route.params.showSearch);
+        }
+    }, [route.params?.showSearch]);
+
+    useEffect(() => {
+        fetchCategories();
+        fetchProducts();
     }, []);
+
+    useEffect(() => {
+        if (!showSearch) {
+            setSearchQuery('');
+            setLatestSearchQuery('');
+            handleCategoryChange('All');
+        }
+        // Focus the search input when showSearch is true
+        if (showSearch && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [showSearch]);
 
     const fetchCategories = async () => {
         try {
             const data = await getCategories();
-            setCategories(['All', ...data]); // Add 'All' as the default category
+            setCategories(['All', ...data]);
         } catch (error) {
             console.error('Error fetching categories:', error);
         } finally {
@@ -53,7 +78,7 @@ const ProductList = () => {
                 isLoadMore ? [...prevProducts, ...data.products] : data.products
             );
             setTotal(data.total);
-            setSkip(skipParam + limit); // Increase the skip value for the next request
+            setSkip(skipParam + limit);
         } catch (error) {
             console.error('Error fetching products:', error);
         } finally {
@@ -64,7 +89,7 @@ const ProductList = () => {
 
     const handleCategoryChange = useCallback((category: string) => {
         setSelectedCategory(category);
-        setSkip(0); // Reset skip when category changes
+        setSkip(0);
         fetchProducts(category);
     }, []);
 
@@ -73,17 +98,17 @@ const ProductList = () => {
             setLoadingProducts(true);
             setSkip(0);
             try {
-                const data = await searchProducts({ query: searchQuery, limit, skip }); // Make sure this function is defined
+                const data = await searchProducts({ query: searchQuery, limit, skip: 0 });
                 setProducts(data.products);
                 setTotal(data.total);
-                // setSkip(skip + limit); // Update skip for future requests
+                setLatestSearchQuery(searchQuery);
             } catch (error) {
                 console.error('Error searching products:', error);
             } finally {
                 setLoadingProducts(false);
             }
         } else {
-            fetchProducts(selectedCategory); // Fetch products again if search is cleared
+            fetchProducts(selectedCategory);
         }
     };
 
@@ -97,32 +122,42 @@ const ProductList = () => {
 
     const handleLoadMore = () => {
         if (products.length < total && !loadingMore) {
-            fetchProducts(selectedCategory, skip, true); // Fetch more products
+            fetchProducts(selectedCategory, skip, true);
         }
     };
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Search Bar at the top */}
-            <View style={styles.searchContainer}>
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search products..."
-                    placeholderTextColor="#aaa"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    onSubmitEditing={handleSearch} // Trigger search on submit
-                />
-            </View>
-            {/* Category Tabs */}
-            {!loadingCategories && !searchQuery && (
+            {/* Conditional rendering of Search Input */}
+            {showSearch && (
+                <View style={styles.searchContainer}>
+                    <View style={styles.searchWrapper}>
+                        <TextInput
+                            ref={searchInputRef}
+                            style={styles.searchInput}
+                            placeholder="Search products..."
+                            placeholderTextColor="#aaa"
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                            onSubmitEditing={handleSearch}
+                        />
+                        {
+                            searchQuery != '' &&
+                            <TouchableOpacity onPress={() => { setSearchQuery(''); (searchInputRef.current && searchInputRef.current.focus()); }}>
+                                <Icon name="close" size={24} color="black" style={styles.closeIcon} />
+                            </TouchableOpacity>
+                        }
+                    </View>
+                </View>
+            )}
+
+            {!loadingCategories && !showSearch && (
                 <CategoryTabs
                     categories={categories}
                     selectedCategory={selectedCategory}
                     onSelectCategory={handleCategoryChange}
                 />
             )}
-            {/* Loading Indicator */}
             {loadingProducts || loadingCategories ? (
                 <View style={styles.loading}>
                     <ActivityIndicator size="large" />
@@ -146,9 +181,12 @@ const ProductList = () => {
                         />
                     ) : (
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>
-                                Cannot find product with keyword: {searchQuery}
-                            </Text>
+                            {
+                                latestSearchQuery != '' &&
+                                <Text style={styles.emptyText}>
+                                    Cannot find product with keyword: {latestSearchQuery}
+                                </Text>
+                            }
                         </View>
                     )}
                 </View>
@@ -163,19 +201,31 @@ const styles = StyleSheet.create({
         backgroundColor: '#f8f8f8',
     },
     searchContainer: {
+        flexDirection: 'row',
         padding: 10,
         backgroundColor: '#fff',
         borderBottomWidth: 1,
         borderBottomColor: '#ddd',
+        alignItems: 'center',
     },
-    searchInput: {
-        color: '#333',
-        height: 40,
+    searchWrapper: {
+        flexDirection: 'row',
+        flex: 1,
+        alignItems: 'center',
+        backgroundColor: '#fff',
         borderColor: '#ddd',
         borderWidth: 1,
         borderRadius: 5,
         paddingHorizontal: 10,
+    },
+    searchInput: {
+        flex: 1,
+        color: '#333',
+        height: 40,
         fontSize: 16,
+    },
+    closeIcon: {
+        marginLeft: 10,
     },
     loading: {
         flex: 1,
@@ -194,7 +244,7 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
-        color: '#888',
+        color: '#555',
     },
 });
 
