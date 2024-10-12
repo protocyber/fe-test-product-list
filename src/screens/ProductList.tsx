@@ -108,6 +108,7 @@ const ProductList = () => {
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Search products..."
+                    placeholderTextColor="#aaa"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                     onSubmitEditing={handleSearch} // Trigger search on submit
@@ -168,6 +169,7 @@ const styles = StyleSheet.create({
         borderBottomColor: '#ddd',
     },
     searchInput: {
+        color: '#333',
         height: 40,
         borderColor: '#ddd',
         borderWidth: 1,
