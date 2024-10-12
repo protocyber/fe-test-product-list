@@ -1,20 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ActivityIndicator } from 'react-native';
-import { getProductById } from '../services/api';
+import { RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import React, { useState } from 'react';
+import { ActivityIndicator, Button, Image, Text, View } from 'react-native';
 
-const ProductDetail = ({ route }: any) => {
-    const { id } = route.params;
-    const [product, setProduct] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
+// Define the parameters for the stack
+type RootStackParamList = {
+    ProductDetail: { product: Product; };
+};
 
-    useEffect(() => {
-        const fetchProduct = async () => {
-            const data = await getProductById(id);
-            setProduct(data);
-            setLoading(false);
-        };
-        fetchProduct();
-    }, [id]);
+// Define the props for the ProductDetail component
+type ProductDetailProps = {
+    route: RouteProp<RootStackParamList, 'ProductDetail'>;
+    navigation: StackNavigationProp<RootStackParamList, 'ProductDetail'>;
+};
+
+const ProductDetail: React.FC<ProductDetailProps> = ({ route, navigation }) => {
+    const { product } = route.params;
+    const [loading, _setLoading] = useState(true);
+
+    // useEffect(() => {
+    //     const fetchProduct = async () => {
+    //         const data = await getProductById(id);
+    //         setProduct(data);
+    //         setLoading(false);
+    //     };
+    //     fetchProduct();
+    // }, [id]);
 
     if (loading) {
         return <ActivityIndicator size="large" color="#0000ff" />;
@@ -26,6 +37,7 @@ const ProductDetail = ({ route }: any) => {
             <Text>{product.title}</Text>
             <Text>{product.description}</Text>
             <Text>${product.price}</Text>
+            <Button title="Back to Products" onPress={() => navigation.goBack()} />
         </View>
     );
 };
