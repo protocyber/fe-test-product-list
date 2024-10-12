@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import Icon from 'react-native-vector-icons/AntDesign';
 
 type RootStackParamList = {
     ProductDetail: { product: Product; };
@@ -65,48 +66,91 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
                     <TouchableOpacity
                         onPress={handlePrevImage}
                         style={styles.arrowLeft}
+                        activeOpacity={0.7}
                     >
-                        <Text style={styles.arrowText}>{'<'}</Text>
+                        <View style={styles.iconContainer}>
+                            <Icon name="left" size={30} color="#fff" />
+                        </View>
                     </TouchableOpacity>
                 )}
                 {currentIndex < product.images.length - 1 && (
                     <TouchableOpacity
                         onPress={handleNextImage}
                         style={styles.arrowRight}
+                        activeOpacity={0.7}
                     >
-                        <Text style={styles.arrowText}>{'>'}</Text>
+                        <View style={styles.iconContainer}>
+                            <Icon name="right" size={30} color="#fff" />
+                        </View>
                     </TouchableOpacity>
                 )}
             </View>
-
             {/* Product Details */}
             <View style={styles.detailsContainer}>
-                <Text style={styles.title}>{product.title}</Text>
-                <Text style={styles.category}>{product.category}</Text>
 
                 <View style={styles.priceContainer}>
                     <Text style={styles.price}>${product.price}</Text>
-                    <Text style={styles.discount}>-{product.discountPercentage}%</Text>
+                    {product.discountPercentage > 1 && (
+                        <>
+                            <Text style={styles.normalPrice}>${(product.price * 100 / (100 - product.discountPercentage)).toFixed(2)}</Text>
+                            <Text style={styles.discount}>{Math.round(product.discountPercentage)}%</Text>
+                        </>
+                    )
+                    }
                 </View>
+                <Text style={styles.title}>{product.title}</Text>
+                {/* <Text style={styles.tags}>{"\n"}Tags: {product.tags.join(', ')}</Text> */}
+                <Text style={styles.category}>{product.category}</Text>
 
                 <View style={styles.stockContainer}>
                     <Text style={styles.stock}>Stock: {product.stock}</Text>
-                    <Text style={styles.rating}>Rating: {product.rating} ⭐</Text>
+                    <Text style={styles.rating}><Icon name='star' style={styles.ratingIcon} /> {product.rating}</Text>
                 </View>
 
                 <Text style={styles.description}>{product.description}</Text>
-                {product.brand && <Text style={styles.brand}>Brand: {product.brand}</Text>}
-                <Text style={styles.sku}>SKU: {product.sku}</Text>
-                <Text style={styles.weight}>Weight: {product.weight} kg</Text>
-                <Text style={styles.dimensions}>
-                    Dimensions: {product.dimensions.width} x {product.dimensions.height} x {product.dimensions.depth} cm
-                </Text>
-                <Text style={styles.warranty}>Warranty: {product.warrantyInformation}</Text>
-                <Text style={styles.shipping}>Shipping: {product.shippingInformation}</Text>
-                <Text style={styles.availability}>Availability: {product.availabilityStatus}</Text>
-                <Text style={styles.returnPolicy}>Return Policy: {product.returnPolicy}</Text>
-                <Text style={styles.minOrder}>Minimum Order Quantity: {product.minimumOrderQuantity}</Text>
-                <Text style={styles.tags}>{"\n"}Tags: {product.tags.join(', ')}</Text>
+
+                <View style={styles.table}>
+                    {product.brand && (
+                        <View style={styles.row}>
+                            <Text style={styles.label}>Brand:</Text>
+                            <Text style={styles.value}>{product.brand}</Text>
+                        </View>
+                    )}
+                    <View style={styles.row}>
+                        <Text style={styles.label}>SKU:</Text>
+                        <Text style={styles.value}>{product.sku}</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Weight:</Text>
+                        <Text style={styles.value}>{product.weight} kg</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Dimensions:</Text>
+                        <Text style={styles.value}>
+                            {product.dimensions.width} x {product.dimensions.height} x {product.dimensions.depth} cm
+                        </Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Warranty:</Text>
+                        <Text style={styles.value}>{product.warrantyInformation}</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Shipping:</Text>
+                        <Text style={styles.value}>{product.shippingInformation}</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Availability:</Text>
+                        <Text style={styles.value}>{product.availabilityStatus}</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Return Policy:</Text>
+                        <Text style={styles.value}>{product.returnPolicy}</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Minimum Order Quantity:</Text>
+                        <Text style={styles.value}>{product.minimumOrderQuantity}</Text>
+                    </View>
+                </View>
             </View>
         </ScrollView>
     );
@@ -137,17 +181,37 @@ const styles = StyleSheet.create({
     },
     arrowLeft: {
         position: 'absolute',
-        left: 10,
-        top: '50%',
-        transform: [{ translateY: -20 }],
+        left: 0,
+        top: 0,
+        height: '100%',
+        width: '25%',
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
         zIndex: 1,
     },
     arrowRight: {
         position: 'absolute',
-        right: 10,
-        top: '50%',
-        transform: [{ translateY: -20 }],
+        right: 0,
+        top: 0,
+        height: '100%',
+        width: '25%',
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        justifyContent: 'center',
+        alignItems: 'flex-end',
         zIndex: 1,
+    },
+    iconContainer: {
+        backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent background for better visibility
+        padding: 5, // Padding around the icon
+        borderRadius: 20, // Round background
+        shadowColor: '#000', // Shadow color
+        shadowOffset: { width: 0, height: 4 }, // Shadow direction and size
+        shadowOpacity: 0.3, // Shadow transparency
+        shadowRadius: 4, // Shadow blur radius
+        elevation: 5, // Elevation for Android
     },
     arrowText: {
         fontSize: 24,
@@ -157,6 +221,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f9f9f9',
         borderRadius: 8,
         padding: 16,
+        paddingTop: 30,
         marginTop: 16,
         shadowColor: '#000',
         shadowOffset: {
@@ -166,6 +231,23 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 1.5,
         elevation: 2,
+        position: 'relative', // For positioning discount
+    },
+    discountContainer: {
+        position: 'absolute',
+        top: 10,
+        left: 0,
+        backgroundColor: '#FF0000',
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        borderTopRightRadius: 8,
+        borderBottomRightRadius: 8,
+        elevation: 3, // Elevation effect
+    },
+    discountText: {
+        color: '#fff',
+        fontSize: 10,
+        fontWeight: 'bold',
     },
     title: {
         fontSize: 24,
@@ -187,15 +269,22 @@ const styles = StyleSheet.create({
     price: {
         fontSize: 22,
         fontWeight: '600',
-        color: '#E53935',
+        color: '#333',
         marginRight: 10,
     },
+    normalPrice: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#888',
+        marginRight: 10,
+        textDecorationLine: 'line-through',
+    },
     discount: {
-        fontSize: 18,
-        color: '#43A047',
-        backgroundColor: '#E8F5E9',
-        paddingVertical: 4,
-        paddingHorizontal: 8,
+        fontSize: 14,
+        color: 'white',
+        backgroundColor: 'red',
+        paddingVertical: 2,
+        paddingHorizontal: 6,
         borderRadius: 4,
     },
     stockContainer: {
@@ -210,6 +299,7 @@ const styles = StyleSheet.create({
     rating: {
         fontSize: 16,
         color: '#555',
+        verticalAlign: 'middle',
     },
     description: {
         fontSize: 16,
@@ -261,6 +351,34 @@ const styles = StyleSheet.create({
     meta: {
         fontSize: 14,
         color: '#aaa',
+    },
+    table: {
+        marginVertical: 10,
+        borderWidth: 1,
+        borderColor: '#ddd',
+        borderRadius: 8,
+    },
+    row: {
+        flexDirection: 'row',
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',
+    },
+    label: {
+        flex: 1,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    value: {
+        flex: 2,
+        color: '#555',
+    },
+    lastRow: {
+        borderBottomWidth: 0,
+    },
+    ratingIcon: {
+        fontSize: 18,
+        color: '#ffaf3a',
     },
 });
 

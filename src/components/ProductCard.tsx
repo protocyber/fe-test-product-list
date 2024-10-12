@@ -15,19 +15,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
 
     const [loadingImage, setLoadingImage] = useState<boolean>(true);
 
-
     return (
         <TouchableOpacity style={styles.card} onPress={onPress}>
-            {/* Render discount triangle if discountPercentage is greater than 10 */}
-            {
-            // product.discountPercentage > 10 && (
-                // <View style={styles.discountTriangleContainer}>
-                //     <View style={styles.discountTriangle} />
-                //     <View style={styles.roundedCorner} />
-                //     <Text style={styles.discountText}>{`${Math.round(product.discountPercentage)}%`}</Text>
-                // </View>
-            // )
-            }
             <View style={styles.imageContainer}>
                 {loadingImage && (
                     <SkeletonPlaceholder>
@@ -46,6 +35,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
                     onLoadEnd={() => setLoadingImage(false)}
                 />
             </View>
+            {/* Red Discount Rectangle */}
+            {product.discountPercentage > 10 && (
+                <View style={styles.discountContainer}>
+                    <Text style={styles.discountText}>
+                        {`${Math.round(product.discountPercentage)}% OFF`}
+                    </Text>
+                </View>
+            )}
             <View style={styles.info}>
                 <Text style={styles.title}>{product.title}</Text>
                 <Text style={styles.description}>{product.description}</Text>
@@ -70,10 +67,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 8,
         elevation: 2,
-        position: 'relative', // For positioning discount triangle
+        position: 'relative', // For positioning discount
     },
     imageContainer: {
-        position: 'relative', // For absolute positioning of discount triangle and text
+        position: 'relative', // For absolute positioning of discount
         overflow: 'hidden', // To prevent overflow issues
         justifyContent: 'center',
         alignItems: 'center',
@@ -83,38 +80,21 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 8,
     },
-    discountTriangleContainer: {
+    discountContainer: {
         position: 'absolute',
-        top: 0,
+        bottom: 10,
         left: 0,
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        zIndex: 1,
-    },
-    discountTriangle: {
-        width: 0,
-        height: 0,
-        borderLeftWidth: 15, // Adjust this to change the triangle width
-        borderBottomWidth: 15, // Adjust this to change the triangle height
-        borderLeftColor: '#34495e', // Color of the triangle
-        borderBottomColor: 'transparent',
-    },
-    roundedCorner: {
-        position: 'absolute',
-        top: 0,
-        left: 15, // Align with the right edge of the triangle
-        width: 5, // Width of the rounded corner
-        height: 5, // Height of the rounded corner
-        backgroundColor: '#34495e', // Same color as the triangle
-        borderRadius: 2.5, // Half of the width/height for a rounded effect
+        backgroundColor: '#FF0000',
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        borderTopRightRadius: 8,
+        borderBottomRightRadius: 8,
+        elevation: 3, // Elevation effect
     },
     discountText: {
-        position: 'absolute',
-        top: 2,
-        left: 2,
-        color: 'white',
+        color: '#fff',
+        fontSize: 10,
         fontWeight: 'bold',
-        fontSize: 12,
     },
     info: {
         flex: 1,
