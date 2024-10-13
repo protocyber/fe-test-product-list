@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import ImagePlaceholder from 'react-native-image-placeholder';
 import Icon from 'react-native-vector-icons/AntDesign';
 
 interface ProductCardProps {
@@ -10,21 +10,20 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
-    // Format the price with thousand separators
     const formattedPrice = new Intl.NumberFormat().format(product.price);
-
     const [loadingImage, setLoadingImage] = useState<boolean>(true);
 
     return (
         <TouchableOpacity style={styles.card} onPress={onPress}>
-            <View style={styles.imageContainer}>
+            <View style={[styles.imageContainer, loadingImage && styles.imageContainerLoading]}>
                 {loadingImage && (
-                    <SkeletonPlaceholder>
-                        <SkeletonPlaceholder.Item
-                            width={100}
-                            height={100}
-                        />
-                    </SkeletonPlaceholder>
+                    <ImagePlaceholder
+                        style={styles.imagePlaceholder}
+                        placeholderStyle={styles.placeholderStyle}
+                        source={{
+                            uri: product.thumbnail,
+                        }}
+                    />
                 )}
                 <FastImage
                     style={styles.image}
@@ -35,7 +34,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
                     onLoadEnd={() => setLoadingImage(false)}
                 />
             </View>
-            {/* Red Discount Rectangle */}
             {product.discountPercentage >= 10 && (
                 <View style={styles.discountContainer}>
                     <Text style={styles.discountText}>
@@ -67,15 +65,31 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 8,
         elevation: 2,
-        position: 'relative', // For positioning discount
+        position: 'relative',
     },
     imageContainer: {
-        position: 'relative', // For absolute positioning of discount
-        overflow: 'hidden', // To prevent overflow issues
+        position: 'relative',
+        overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
     },
+    // Set a fixed height for the image container during loading
+    imageContainerLoading: {
+        height: 100, // Matches the size of the image placeholder
+    },
     image: {
+        width: 100,
+        height: 100,
+        borderRadius: 8,
+    },
+    imagePlaceholder: {
+        position: 'absolute',
+        height: 100,
+        width: 100,
+        top: -2,
+    },
+    placeholderStyle: {
+        backgroundColor: '#f0f0f0',
         width: 100,
         height: 100,
         borderRadius: 8,
@@ -89,7 +103,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         borderTopRightRadius: 8,
         borderBottomRightRadius: 8,
-        elevation: 3, // Elevation effect
+        elevation: 3,
     },
     discountText: {
         color: '#fff',
@@ -127,7 +141,7 @@ const styles = StyleSheet.create({
     rating: {
         fontSize: 14,
         color: '#000',
-        marginLeft: 4, // Space between the star icon and the rating number
+        marginLeft: 4,
     },
 });
 

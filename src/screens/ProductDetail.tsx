@@ -81,7 +81,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
                         priority: FastImage.priority.high,
                     }}
                     onLoadEnd={() => handleImageLoad(currentIndex)}
-                    resizeMode={FastImage.resizeMode.cover}
+                    resizeMode={FastImage.resizeMode.contain}
                 />
 
                 {currentIndex > 0 && (
