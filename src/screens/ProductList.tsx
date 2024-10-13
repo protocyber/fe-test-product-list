@@ -226,6 +226,7 @@ const styles = StyleSheet.create({
     },
     closeIcon: {
         marginLeft: 10,
+        backgroundColor: 'white',
     },
     loading: {
         flex: 1,

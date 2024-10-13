@@ -1,13 +1,13 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Favorites from '../screens/Favorites';
-import StackNavigator from './StackNavigator';
+import FavoritesStackNavigator from './FavoriteStackNavigator';
+import ProductStackNavigator from './ProductStackNavigator';
 import { Colors } from '../constants';
 
 type TabParamList = {
     ProductsTab: undefined;
-    Favorites: undefined;
+    FavoritesTab: undefined;
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -17,17 +17,17 @@ const BottomTabNavigator: React.FC = () => {
         <Tab.Navigator
             initialRouteName="ProductsTab"
             screenOptions={({ route }) => ({
-                headerShown: false, // Hide headers in bottom tabs
+                headerShown: false,
                 tabBarIcon: ({ color, size }) => {
                     let iconName = '';
 
                     if (route.name === 'ProductsTab') {
                         iconName = 'grid';
-                    } else if (route.name === 'Favorites') {
+                    } else if (route.name === 'FavoritesTab') {
                         iconName = 'heart';
                     }
 
-                    return <Icon name={iconName} size={20} color={color} />;
+                    return <Icon name={iconName} size={size} color={color} />;
                 },
                 tabBarActiveTintColor: Colors.green,
                 tabBarInactiveTintColor: '#999',
@@ -35,12 +35,12 @@ const BottomTabNavigator: React.FC = () => {
         >
             <Tab.Screen
                 name="ProductsTab"
-                component={StackNavigator}
+                component={ProductStackNavigator}
                 options={{ tabBarLabel: 'Products' }}
             />
             <Tab.Screen
-                name="Favorites"
-                component={Favorites}
+                name="FavoritesTab"
+                component={FavoritesStackNavigator}  // Use new stack for Favorites
                 options={{ tabBarLabel: 'Favorites' }}
             />
         </Tab.Navigator>

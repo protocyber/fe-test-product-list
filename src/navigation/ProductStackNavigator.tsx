@@ -1,9 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/AntDesign';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProductDetail from '../screens/ProductDetail';
 import ProductList from '../screens/ProductList';
+import { Colors } from '../constants';
 
 export type RootStackParamList = {
     ProductList: undefined;
@@ -26,9 +27,9 @@ const SearchIcon = ({ navigation }: { navigation: any; }) => {
             <View style={isSearchVisible ? styles.activeSearchIconWrapper : styles.searchIconWrapper}>
                 {
                     isSearchVisible ?
-                        <Icon name="search1" size={18} color="white" />
+                        <Icon name="filter-alt-off" size={18} color="white" />
                         :
-                        <Icon name="search1" size={24} color="black" />
+                        <Icon name="filter-alt" size={24} color="black" />
                 }
             </View>
         </TouchableOpacity>
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
         padding: 3,
     },
     activeSearchIconWrapper: {
-        backgroundColor: '#555',
+        backgroundColor: Colors.green,
         padding: 5,
         borderRadius: 5,
     },
