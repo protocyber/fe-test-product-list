@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, TouchableOpacity, Text, StyleSheet, View } from 'react-native';
+import { Colors } from '../constants';
 
 interface CategoryTabsProps {
     categories: string[];
@@ -45,14 +46,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     selectedTab: {
-        borderBottomColor: '#4f9d4d',
+        borderBottomColor: Colors.green,
     },
     tabText: {
         fontSize: 16,
         color: '#333',
     },
     selectedText: {
-        color: '#4f9d4d',
+        color: Colors.green,
         fontWeight: 'bold',
     },
 });

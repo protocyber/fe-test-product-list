@@ -1,9 +1,10 @@
 import { RouteProp } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Icon from 'react-native-vector-icons/AntDesign';
+import { FavoritesContext } from '../context/FavoritesContext';
 
 type RootStackParamList = {
     ProductDetail: { product: Product; };
@@ -20,6 +21,16 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
     const [loadingImages, setLoadingImages] = useState<boolean[]>(new Array(product.images.length).fill(true));
     const [currentIndex, setCurrentIndex] = useState(0);
     const [firstImageLoading, setFirstImageLoading] = useState(true);
+
+    const { addToFavorites, removeFromFavorites, isFavorite } = useContext(FavoritesContext);
+
+    const toggleFavorite = () => {
+        if (isFavorite(product.id)) {
+            removeFromFavorites(product.id);
+        } else {
+            addToFavorites(product);
+        }
+    };
 
     const handleImageLoad = (index: number) => {
         setLoadingImages(prev => {
@@ -57,7 +68,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
                                 uri: product.thumbnail,
                                 priority: FastImage.priority.low,
                             }}
-                            resizeMode={FastImage.resizeMode.cover}
+                            resizeMode={FastImage.resizeMode.contain}
                             blurRadius={5} // Blurred thumbnail
                         />
                         <View style={styles.loadingOverlay}>
@@ -110,14 +121,25 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ route }) => {
 
             {/* Product Details */}
             <View style={styles.detailsContainer}>
-                <View style={styles.priceContainer}>
-                    <Text style={styles.price}>${product.price}</Text>
-                    {product.discountPercentage >= 10 && (
-                        <>
-                            <Text style={styles.normalPrice}>${(product.price * 100 / (100 - product.discountPercentage)).toFixed(2)}</Text>
-                            <Text style={styles.discount}>{Math.round(product.discountPercentage)}%</Text>
-                        </>
-                    )}
+                <View style={styles.productHeader}>
+                    <View style={styles.priceContainer}>
+                        <Text style={styles.price}>${product.price}</Text>
+                        {product.discountPercentage >= 10 && (
+                            <>
+                                <Text style={styles.normalPrice}>${(product.price * 100 / (100 - product.discountPercentage)).toFixed(2)}</Text>
+                                <Text style={styles.discount}>{Math.round(product.discountPercentage)}%</Text>
+                            </>
+                        )}
+                    </View>
+                    <View>
+                        <TouchableOpacity onPress={toggleFavorite}>
+                            <Icon
+                                name={isFavorite(product.id) ? 'heart' : 'hearto'}
+                                size={20}
+                                color={isFavorite(product.id) ? 'red' : 'gray'}
+                            />
+                        </TouchableOpacity>
+                    </View>
                 </View>
                 <Text style={styles.title}>{product.title}</Text>
                 <Text style={styles.category}>{product.category}</Text>
@@ -190,6 +212,13 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         borderRadius: 8,
         overflow: 'hidden', // Prevent overflow issues
+    },
+    productHeader: {
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     slideshowImage: {
         width: '100%',
