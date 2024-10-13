@@ -40,7 +40,7 @@ const BottomTabNavigator: React.FC = () => {
             />
             <Tab.Screen
                 name="FavoritesTab"
-                component={FavoritesStackNavigator}  // Use new stack for Favorites
+                component={FavoritesStackNavigator}
                 options={{ tabBarLabel: 'Favorites' }}
             />
         </Tab.Navigator>
