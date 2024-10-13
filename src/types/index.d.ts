@@ -40,5 +40,5 @@ declare type Product = {
 
 declare type RootStackParamList = {
   ProductList: undefined;
-  ProductDetail: { id: number }; // ProductDetail expects an id as a route parameter
+  ProductDetail: { product: Product };
 }

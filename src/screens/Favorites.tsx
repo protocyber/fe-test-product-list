@@ -5,7 +5,6 @@ import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 import FastImage from 'react-native-fast-image';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { FavoritesContext } from '../context/FavoritesContext';
-import { RootStackParamList } from '../navigation/ProductStackNavigator';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ProductDetail'>;
 

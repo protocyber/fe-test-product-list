@@ -1,15 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { Colors } from '../constants';
 import ProductDetail from '../screens/ProductDetail';
 import ProductList from '../screens/ProductList';
-import { Colors } from '../constants';
-
-export type RootStackParamList = {
-    ProductList: undefined;
-    ProductDetail: { product: Product; };
-};
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

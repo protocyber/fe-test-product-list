@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import ImagePlaceholder from 'react-native-image-placeholder';
 import Icon from 'react-native-vector-icons/AntDesign';
+import { FavoritesContext } from '../context/FavoritesContext';
 
 interface ProductCardProps {
     product: Product;
@@ -12,6 +13,8 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
     const formattedPrice = new Intl.NumberFormat().format(product.price);
     const [loadingImage, setLoadingImage] = useState<boolean>(true);
+
+    const { isFavorite } = useContext(FavoritesContext);
 
     return (
         <TouchableOpacity style={styles.card} onPress={onPress}>
@@ -42,7 +45,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => {
                 </View>
             )}
             <View style={styles.info}>
-                <Text style={styles.title}>{product.title}</Text>
+                <View style={styles.flexTitle}>
+                    <Text style={styles.title}>{product.title}</Text>
+                    {
+                        isFavorite(product.id) && <Icon
+                            name="heart"
+                            size={14}
+                            color="red"
+                        />
+                    }
+                </View>
                 <Text style={styles.description}>{product.description}</Text>
                 <View style={styles.priceRatingContainer}>
                     <Text style={styles.price}>${formattedPrice}</Text>
@@ -113,6 +125,13 @@ const styles = StyleSheet.create({
     info: {
         flex: 1,
         paddingLeft: 10,
+    },
+    flexTitle: {
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
     },
     title: {
         color: '#333',

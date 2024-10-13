@@ -6,10 +6,6 @@ import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import Icon from 'react-native-vector-icons/AntDesign';
 import { FavoritesContext } from '../context/FavoritesContext';
 
-type RootStackParamList = {
-    ProductDetail: { product: Product; };
-};
-
 type ProductDetailProps = {
     route: RouteProp<RootStackParamList, 'ProductDetail'>;
 };
